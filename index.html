@@ -455,6 +455,7 @@ function mark(t,code,state){
   save(); refreshTotals(); paintDots(); drawMap(); renderChem(true); renderToday();
   queueSend({r:D.regions[ri].key||D.regions[ri].name, t:t, c:code, n:rowc[1]||'',
              s:(st==='v'?'ordered':'cleared'), d:new Date().toISOString()});
+  setTimeout(()=>cloudPull(), 2500);
   if(st==='v'){
     buzz(28); confetti();
     const q=tallyZone(), ts=todayStats(t), goal=goalOf(t);
@@ -863,7 +864,11 @@ function renderChem(keepScroll){
       return '<div class="ch'+(st==='v'?' done':st==='r'?' refused':'')+'">'
       +'<div class="top"><div class="n">'+(nw?'<span class="tagnew">NEW</span> ':'')+c[1]+'</div>'
       +'<div class="v" style="color:'+(want?'#1E2761':'#D0342C')+'">'+tk(val)+'</div></div>'
-      +'<div class="meta">Code '+c[0]+(want
+      +'<div class="meta">'+(function(){
+          const e=(ST.log||[]).find(x=>x.c===c[0]&&x.t===t.name&&x.by&&x.by!==ST.rep);
+          return e? '<span style="background:#E7F3ED;color:#1E8E5A;border-radius:5px;padding:1px 5px;'
+            +'font-size:10px;font-weight:700;margin-right:5px">'+e.by+'</span>' : '';
+        })()+'Code '+c[0]+(want
           ? (c[2]>0?' · ordered '+c[3]+' of 8 months':' · marked by you today · Radiant business')
           : (st==='r'?' · you marked no order · Radiant business':' · total Radiant business'))+'</div>'
       +'<div class="acts">'
@@ -911,13 +916,57 @@ function paintSync(){
   const b=document.getElementById('sync'); if(!b) return;
   const n=(ST.out||[]).length;
   b.className='syncbar'+(n?' wait':'');
-  b.innerHTML='<span class="dot"></span><span>'+(n? n+' order'+(n>1?'s':'')+' waiting to send'
-    : 'All orders sent'+(ST.synced? ' · '+new Date(ST.synced).toLocaleTimeString([],
-      {hour:'2-digit',minute:'2-digit'}):''))+'</span>'
+  b.innerHTML='<span class="dot"></span><span>'
+    +(pulling? 'Loading team orders…'
+      : n? n+' order'+(n>1?'s':'')+' waiting to send'
+      : 'Shared view · '+PULLED+' order'+(PULLED===1?'':'s')+' from '+PULLREPS+' MIO'
+        +(PULLREPS===1?'':'s'))+'</span>'
     +'<span style="margin-left:6px">· <b>'+(ST.rep||'no name')+'</b> · '+ZONE+'</span>'
-    +'<button class="btn" onclick="pushNext()">Sync</button>';
+    +'<button class="btn" onclick="pushNext();cloudPull()">Refresh</button>';
 }
-addEventListener('online',()=>pushNext());
+addEventListener('online',()=>{pushNext();cloudPull();});
+
+/* ---------------- pull everyone's orders so the link shows shared data ---------------- */
+let PULLED=0, PULLREPS=0, pulling=false;
+function cloudPull(cb){
+  if(!ZONE || pulling) return; pulling=true; paintSync();
+  const name='cp'+Date.now();
+  window[name]=function(res){
+    delete window[name]; pulling=false;
+    if(!res||!res.rows){ paintSync(); if(cb)cb(false); return; }
+    const idx={};
+    D.regions.forEach((r,rj)=>r.territories.forEach((t,tj)=>{ idx[t.name]=[rj,tj]; }));
+    const mine=res.rows
+      .filter(r=>String(r[2]||'').trim()===ZONE)
+      .map(r=>({ts:r[0]||'', rep:(r[1]||'').trim()||'(unnamed)', terr:(r[4]||'').trim(),
+                code:String(r[5]||'').replace(/^'/,'').trim(), status:(r[7]||'').trim(),
+                when:String(r[8]||'').slice(0,10)}))
+      .filter(r=>idx[r.terr] && r.code);
+    mine.sort((a,b)=>String(a.ts).localeCompare(String(b.ts)));   // last word wins
+    const reps=new Set();
+    mine.forEach(r=>{
+      const k=vkey(r.terr,r.code);
+      if(r.status==='ordered'){
+        ST.visit[k]='v'; reps.add(r.rep);
+        ST.log=ST.log.filter(x=>!(x.c===r.code&&x.t===r.terr));
+        const p=idx[r.terr], T=D.regions[p[0]].territories[p[1]];
+        const row=(T.chem||[]).find(c=>c[0]===r.code)||[];
+        ST.log.push({d:r.when||todayKey(), t:r.terr, c:r.code, n:row[1]||'', s:'v', by:r.rep});
+      } else if(r.status==='cleared'){
+        delete ST.visit[k];
+        ST.log=ST.log.filter(x=>!(x.c===r.code&&x.t===r.terr));
+      }
+    });
+    PULLED=mine.filter(r=>r.status==='ordered').length; PULLREPS=reps.size;
+    ST.pulled=Date.now(); save();
+    if(typeof render==='function' && D) render();
+    paintSync(); if(cb)cb(true);
+  };
+  const s2=document.createElement('script');
+  s2.src=ENDPOINT+'?action=read&callback='+name+'&t='+Date.now();
+  s2.onerror=()=>{ delete window[name]; pulling=false; paintSync(); if(cb)cb(false); };
+  document.body.appendChild(s2);
+}
 
 /* ---------------- login gate ---------------- */
 var ZONE='', D=null, ZIDX=null;
@@ -960,6 +1009,8 @@ gEl('gGo').onclick=()=>{
     document.getElementById('app').style.display='';
     if(ST.mine){ ri=ST.mine[0]; ti=ST.mine[1]; lvl=2; } else { lvl=0; }
     render(); paintSync(); pushNext();
+    cloudPull(function(ok){ if(!ok) toast('Could not load team orders — showing your own only'); });
+    setInterval(()=>{ if(!document.hidden) cloudPull(); }, 120000);
   }).catch(()=>{ gEl('gGo').textContent='Open my chemist list';
     gEl('gErr').style.display='block';
     gEl('gErr').textContent='Could not load that zone. Check your connection and try again.'; });
