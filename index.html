@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1E2761">
+<title>Gavirad Chemist Coverage — MIO Portal</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2761'/%3E%3Ccircle cx='24' cy='26' r='7' fill='%23E39A2B'/%3E%3Ccircle cx='42' cy='38' r='6' fill='%23D0342C'/%3E%3Ccircle cx='40' cy='20' r='4' fill='%23CADCFC'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E2761'/%3E%3Ccircle cx='24' cy='26' r='7' fill='%23E39A2B'/%3E%3Ccircle cx='42' cy='38' r='6' fill='%23D0342C'/%3E%3Ccircle cx='40' cy='20' r='4' fill='%23CADCFC'/%3E%3C/svg%3E">
+<style>
+  :root{--navy:#1E2761;--navyd:#141A44;--amber:#E39A2B;--red:#D0342C;--green:#1E8E5A;
+        --ice:#CADCFC;--icel:#EEF4FE;--grey:#5A6478;--line:#E4E9F2}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:#F7F9FC;color:var(--navy);
+    font-family:-apple-system,"Segoe UI",Roboto,Calibri,system-ui,sans-serif;
+    font-size:16px;-webkit-text-size-adjust:100%}
+  .app{max-width:760px;margin:0 auto;background:#fff;min-height:100vh;
+       box-shadow:0 0 24px rgba(30,39,97,.06)}
+
+  /* ---- sticky header ---- */
+  header{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;
+         padding:12px 16px 10px;padding-top:calc(12px + env(safe-area-inset-top))}
+  .brand{display:flex;align-items:center;gap:8px;margin-bottom:9px;cursor:pointer}
+  .brand .bn{font-size:11.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+             color:var(--amber);flex:1;line-height:1.25}
+  .brand .bz{font-size:11px;background:rgba(255,255,255,.14);border-radius:20px;
+             padding:3px 9px;color:#fff;white-space:nowrap}
+  .brand .mark{display:flex;align-items:center;gap:2.5px;flex:none}
+  .brand .mark i{width:7px;height:7px;border-radius:50%;display:block}
+  .brand .mark i:nth-child(1){background:var(--amber)}
+  .brand .mark i:nth-child(2){background:var(--ice)}
+  .brand .mark i:nth-child(3){background:var(--red)}
+  header .t{font-size:17px;font-weight:700;letter-spacing:-.2px}
+  header .s{font-size:12.5px;color:var(--ice);margin-top:2px}
+  .crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;
+         margin-top:9px;color:var(--ice)}
+  .crumb span.c{background:rgba(255,255,255,.13);border-radius:20px;padding:4px 11px;
+                cursor:pointer}
+  .crumb span.c.now{background:var(--amber);color:var(--navyd);font-weight:700}
+
+  /* ---- my-territory bar ---- */
+  .mine{display:flex;gap:8px;padding:10px 12px;background:var(--icel);
+        border-bottom:1px solid var(--line);align-items:center}
+  .mine b{font-size:12.5px;flex:1;line-height:1.3}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:9px;
+       padding:9px 13px;font-size:13.5px;font-family:inherit;color:var(--navy);
+       cursor:pointer;white-space:nowrap;min-height:42px}
+  .btn:active{background:var(--icel)}
+  .btn.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .btn.sm{padding:7px 11px;min-height:36px;font-size:12.5px}
+
+  /* ---- stat strip ---- */
+  .stats{display:flex;gap:8px;padding:12px}
+  .st{flex:1;background:var(--icel);border-radius:11px;padding:10px 8px;text-align:center}
+  .st.dark{background:var(--navy)}
+  .st .v{font-size:20px;font-weight:800;letter-spacing:-.5px}
+  .st.dark .v{color:var(--amber)}
+  .st .k{font-size:10.5px;color:var(--grey);margin-top:1px;line-height:1.25}
+  .st.dark .k{color:var(--ice)}
+
+  /* ---- map ---- */
+  .mapwrap{position:relative;margin:0 12px 12px;border:1px solid var(--line);
+           border-radius:13px;overflow:hidden;background:#fff}
+  #cv,#map{position:absolute;inset:0;width:100%;height:100%}
+  #cv{z-index:1}#map{z-index:2}
+  .sp{width:100%}
+  .poly{fill:rgba(255,255,255,0);stroke:#C3CDE0;stroke-width:1}
+  .poly.on{fill:rgba(203,220,252,.6)}
+  .lbl{font-weight:700;fill:var(--navy)}
+  .lbl2{fill:var(--grey)}
+  .halo{stroke:#fff;paint-order:stroke}
+  .legend{display:flex;gap:8px;padding:0 12px 12px}
+  .lg{flex:1;display:flex;align-items:center;gap:8px;border:1px solid var(--line);
+      border-radius:10px;padding:9px 11px;font-size:12.5px;cursor:pointer;min-height:44px}
+  .lg.off{opacity:.38}
+  .sw{width:11px;height:11px;border-radius:50%;flex:none}
+  .lg b{display:block;font-size:14px}
+
+  /* ---- lists ---- */
+  .sec{padding:0 12px 10px}
+  h2{font-size:11px;letter-spacing:1.2px;color:var(--amber);margin:4px 0 9px;
+     text-transform:uppercase}
+  .item{display:flex;align-items:center;gap:10px;border:1px solid var(--line);
+        border-radius:11px;padding:12px;margin-bottom:8px;cursor:pointer;min-height:56px}
+  .item:active{background:var(--icel)}
+  .item .nm{flex:1;font-weight:700;font-size:14.5px;line-height:1.3}
+  .item .sub{font-size:11.5px;color:var(--grey);font-weight:400;margin-top:2px}
+  .pill{font-size:12px;font-weight:700;border-radius:20px;padding:4px 9px;flex:none}
+  .pill.low{background:#FDF0E2;color:#B8770F}
+  .pill.ok{background:#E7F3ED;color:var(--green)}
+  .chev{color:#B9C3D8;font-size:19px;flex:none}
+
+  /* ---- chemist tools ---- */
+  .tabs{display:flex;gap:8px;margin-bottom:9px}
+  .tab{flex:1;text-align:center;border:1px solid var(--line);border-radius:10px;
+       padding:10px 6px;font-size:12.5px;cursor:pointer;min-height:48px}
+  .tab b{display:block;font-size:17px;font-weight:800}
+  .tab.act{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .tab.act.red{background:var(--red);border-color:var(--red)}
+  .tools{display:flex;gap:7px;margin-bottom:9px;flex-wrap:wrap}
+  input.s{flex:1 1 100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;
+          font-size:15px;font-family:inherit;color:var(--navy);min-width:0}
+  input.s:focus{outline:none;border-color:var(--navy)}
+  select.s{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px;
+           font-size:13px;font-family:inherit;color:var(--navy);background:#fff;min-height:42px}
+  .ch{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:8px}
+  .ch.done{border-color:#BFE3D0;background:#F4FBF7}
+  .ch.refused{border-color:#F0CFCC;background:#FDF6F5}
+  .ch .top{display:flex;gap:9px;align-items:baseline}
+  .ch .n{flex:1;font-weight:700;font-size:14.5px;line-height:1.3}
+  .ch .v{font-size:13px;font-weight:700;white-space:nowrap}
+  .ch .meta{font-size:11.5px;color:var(--grey);margin-top:3px}
+  .ch .acts{display:flex;gap:6px;margin-top:9px}
+  .ch .acts .btn{flex:1;text-align:center;padding:8px 4px;font-size:12px;min-height:40px}
+  .btn.on-v{background:var(--green);color:#fff;border-color:var(--green)}
+  .btn.on-r{background:var(--red);color:#fff;border-color:var(--red)}
+  .empty{padding:26px 10px;text-align:center;color:var(--grey);font-size:13.5px}
+  .note{padding:0 12px 22px;font-size:11px;color:#96A0B5;line-height:1.6}
+  .cbx{display:none;position:fixed;inset:0;background:rgba(20,26,68,.55);z-index:50;
+       align-items:center;justify-content:center;padding:22px}
+  .cbxin{background:#fff;border-radius:14px;padding:16px;width:100%;max-width:420px}
+  .cbxt{font-size:13px;color:var(--grey);margin-bottom:8px}
+  .cbx textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;
+    font-size:16px;font-family:inherit;color:var(--navy);resize:none;margin-bottom:10px}
+  .cbx .btn{width:100%}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;background:var(--navyd);
+         color:#fff;padding:10px 16px;border-radius:22px;font-size:13px;opacity:0;
+         transition:opacity .18s;z-index:40;pointer-events:none}
+  .prog{height:5px;background:var(--line);border-radius:4px;overflow:hidden;margin:2px 0 10px}
+  .prog i{display:block;height:100%;background:var(--green);width:0}
+  .tagnew{background:#1E8E5A;color:#fff;font-size:9.5px;font-weight:800;border-radius:5px;
+          padding:2px 5px;vertical-align:middle;letter-spacing:.4px}
+
+  .today{margin:0 12px 12px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .today .row1{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--navy)}
+  .ring{position:relative;width:62px;height:62px;flex:none}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .pc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+            font-size:14px;font-weight:800;color:#fff}
+  .today .rlbl{display:none}
+  .today .lead{flex:1;color:#fff;line-height:1.35}
+  .today .lead b{font-size:15px;display:block}
+  .today .lead span{font-size:11.5px;color:var(--ice)}
+  .streak{background:rgba(255,255,255,.14);border-radius:20px;padding:5px 11px;
+          font-size:12px;color:#fff;white-space:nowrap;flex:none}
+  .today .row2{display:flex;background:#fff}
+  .today .cell{flex:1;padding:10px 8px;text-align:center;border-right:1px solid var(--line)}
+  .today .cell:last-child{border-right:none}
+  .today .cell .v{font-size:18px;font-weight:800}
+  .today .cell .k{font-size:10px;color:var(--grey);margin-top:1px}
+  .today .note2{padding:8px 12px;font-size:10.5px;color:var(--grey);background:#FAFBFE;
+                border-top:1px solid var(--line);line-height:1.45}
+  .today .row3{display:flex;gap:7px;padding:0 10px 9px;background:#FAFBFE}
+  .today .row3 .btn{flex:1;min-height:38px;font-size:12px;padding:7px 6px}
+  .goalhit{background:#E7F3ED !important}
+  .goalhit .v{color:var(--green)}
+  .nudge{margin:0 0 10px;border:1px dashed #E0A33C;background:#FFFCF5;border-radius:11px;
+         padding:10px 12px;display:flex;gap:10px;align-items:center;cursor:pointer}
+  .nudge .ic{font-size:17px;flex:none}
+  .nudge .tx{flex:1;font-size:12.5px;line-height:1.35}
+  .nudge .tx b{display:block;font-size:13.5px}
+  .nudge .go{font-size:12px;color:#B8770F;font-weight:700;flex:none}
+  .ch.just{animation:pop .45s ease}
+  @keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.025)}100%{transform:scale(1)}}
+  .cfx{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+  .cfx i{position:absolute;width:8px;height:13px;border-radius:2px;opacity:0;
+         animation:fall 1.5s ease-in forwards}
+  @keyframes fall{0%{opacity:1;transform:translateY(-20px) rotate(0)}
+                  100%{opacity:0;transform:translateY(105vh) rotate(520deg)}}
+  .bigtoast{position:fixed;left:50%;top:34%;transform:translate(-50%,-50%) scale(.85);
+            background:#fff;border-radius:18px;padding:20px 26px;text-align:center;z-index:61;
+            box-shadow:0 14px 44px rgba(20,26,68,.26);opacity:0;transition:all .28s;
+            pointer-events:none;max-width:78%}
+  .bigtoast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .bigtoast .em{font-size:34px}
+  .bigtoast .t1{font-size:17px;font-weight:800;margin-top:6px}
+  .bigtoast .t2{font-size:12.5px;color:var(--grey);margin-top:4px;line-height:1.4}
+  .mdl{display:none;position:fixed;inset:0;background:rgba(20,26,68,.55);z-index:70;
+       align-items:center;justify-content:center;padding:20px}
+  .mdl.on{display:flex}
+  .mdlin{background:#fff;border-radius:16px;padding:18px;width:100%;max-width:400px}
+  .mdlin h3{margin:0 0 4px;font-size:17px}
+  .mdlin p{margin:0 0 14px;font-size:12.5px;color:var(--grey);line-height:1.45}
+  .stepper{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:14px}
+  .stepper .b{width:52px;height:52px;border-radius:14px;border:1px solid var(--line);
+              background:#fff;font-size:24px;color:var(--navy);cursor:pointer}
+  .stepper .b:active{background:var(--icel)}
+  .stepper .n{font-size:34px;font-weight:800;min-width:78px;text-align:center}
+  .presets{display:flex;gap:7px;margin-bottom:14px}
+  .presets .p{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 0;
+              text-align:center;font-size:13px;cursor:pointer}
+  .presets .p.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .mdlrow{display:flex;gap:8px}
+  .mdlrow .btn{flex:1;min-height:46px}
+
+  #gate{position:fixed;inset:0;z-index:90;background:linear-gradient(135deg,#141A44,#2C3A7A);
+        display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}
+  #gate .box{background:#fff;border-radius:18px;padding:22px;width:100%;max-width:430px}
+  #gate h2{margin:0 0 4px;font-size:20px}
+  #gate p{margin:0 0 16px;font-size:13px;color:var(--grey);line-height:1.5}
+  #gate label{display:block;font-size:10.5px;letter-spacing:.8px;color:var(--grey);
+              text-transform:uppercase;font-weight:700;margin:12px 0 5px}
+  #gate select,#gate input{width:100%;border:1px solid var(--line);border-radius:10px;
+        padding:12px;font-size:16px;font-family:inherit;color:var(--navy);background:#fff}
+  #gate .go{width:100%;margin-top:18px;min-height:50px;font-size:15px}
+  #gate .err{color:var(--red);font-size:12.5px;margin-top:10px;display:none}
+  #gate .mk{display:flex;gap:4px;margin-bottom:12px}
+  #gate .mk i{width:9px;height:9px;border-radius:50%;display:block}
+  .syncbar{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:11.5px;
+           background:#F1F5FB;color:var(--grey);border-bottom:1px solid var(--line)}
+  .syncbar b{color:var(--navy)}
+  .syncbar .dot{width:8px;height:8px;border-radius:50%;background:#54D191;flex:none}
+  .syncbar.wait .dot{background:var(--amber)}
+  .syncbar .btn{margin-left:auto;min-height:30px;padding:5px 10px;font-size:11.5px}
+</style>
+
+<div id="gate"><div class="box">
+  <div class="mk"><i style="background:#E39A2B"></i><i style="background:#CADCFC"></i>
+    <i style="background:#D0342C"></i></div>
+  <h2>Gavirad Chemist Coverage</h2>
+  <p>Choose your territory to open your chemist list. Your choice is remembered on this phone.</p>
+  <label>Your name (MIO)</label>
+  <input id="gName" placeholder="e.g. Rahim Uddin" autocomplete="name">
+  <label>Zone</label><select id="gZone"><option value="">Select zone</option></select>
+  <label>Region</label><select id="gReg"><option value="">Select zone first</option></select>
+  <label>Territory</label><select id="gTerr"><option value="">Select region first</option></select>
+  <button class="btn pri go" id="gGo">Open my chemist list</button>
+  <div class="err" id="gErr"></div>
+</div></div>
+<div class="app" id="app" style="display:none">
+  <header>
+    <div class="brand" onclick="goHome()">
+      <span class="mark"><i></i><i></i><i></i></span>
+      <span class="bn">Gavirad Chemist Coverage Tracker</span>
+      <span class="bz" id="bzTag">—</span>
+    </div>
+    <div class="t" id="hT">—</div>
+    <div class="s" id="hS"></div>
+    <div class="crumb" id="crumb"></div>
+  </header>
+
+  <div class="syncbar" id="sync"></div>
+  <div class="mine" id="mine"></div>
+  <div class="today" id="today"></div>
+  <div class="stats" id="stats"></div>
+
+  <div class="mapwrap" id="mapwrap">
+    <canvas id="cv"></canvas>
+    <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="sp" id="sp"></div>
+  </div>
+  <div class="legend">
+    <div class="lg" id="lgB" onclick="tog('B')"><span class="sw" style="background:#1E2761"></span>
+      <span>Ordered<b id="cB"></b></span></div>
+    <div class="lg" id="lgM" onclick="tog('M')"><span class="sw" style="background:#D0342C"></span>
+      <span>No order<b id="cM"></b></span></div>
+  </div>
+
+  <div class="sec" id="body"></div>
+  <div class="note" id="note"></div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="cfx" id="cfx"></div>
+<div class="bigtoast" id="big"></div>
+<div class="mdl" id="mdl" onclick="if(event.target.id==='mdl')closeMdl()"><div class="mdlin" id="mdlin"></div></div>
+<div class="cbx" id="copybox" onclick="if(event.target.id==='copybox')hideCopyBox()">
+  <div class="cbxin">
+    <div class="cbxt">Press and hold to copy</div>
+    <textarea id="copyfield" rows="2" readonly></textarea>
+    <button class="btn pri" onclick="hideCopyBox()">Done</button>
+  </div>
+</div>
+
+<script>
+
+;
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('map'), cv=document.getElementById('cv'),
+      wrap=document.getElementById('mapwrap'), sp=document.getElementById('sp');
+let lvl=0, ri=null, ti=null, tab='M', sortBy='value', onlyOpen=false;
+const show={B:true,M:true};
+let VB=[0,0,720,640];
+
+/* ---------- saved state (visit log + my territory) ---------- */
+const KEY='gav.mio.v1';
+
+let ST={mine:null, visit:{}, log:[], goals:{}, days:{}, streak:0, last:'', rep:''};
+try{const r=localStorage.getItem(KEY); if(r) ST=Object.assign(ST,JSON.parse(r));}catch(e){}
+function save(){ try{localStorage.setItem(KEY,JSON.stringify(ST));}catch(e){} }
+
+
+/* clipboard: the async API only works on https, and these files are usually opened
+   from local storage, so fall back to execCommand and then to a selectable box */
+function copyText(txt){
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(txt).then(()=>toast('Copied'),()=>legacyCopy(txt));
+    return;
+  }
+  legacyCopy(txt);
+}
+function legacyCopy(txt){
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=txt;
+    ta.setAttribute('readonly','');
+    ta.style.position='fixed'; ta.style.top='0'; ta.style.left='0';
+    ta.style.opacity='0'; ta.style.fontSize='16px';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select(); ta.setSelectionRange(0,txt.length);
+    const ok=document.execCommand('copy');
+    document.body.removeChild(ta);
+    if(ok){ toast('Copied'); return; }
+  }catch(e){}
+  showCopyBox(txt);
+}
+function showCopyBox(txt){
+  const w=document.getElementById('copybox');
+  w.style.display='flex';
+  const f=document.getElementById('copyfield');
+  f.value=txt; f.focus(); f.select();
+}
+function hideCopyBox(){ document.getElementById('copybox').style.display='none'; }
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.opacity=1;
+  clearTimeout(t._h);t._h=setTimeout(()=>t.style.opacity=0,1500);}
+
+const el=(t,a)=>{const n=document.createElementNS(NS,t);for(const k in a)n.setAttribute(k,a[k]);return n;};
+const pth=p=>p.map((q,i)=>(i?'L':'M')+q[0]+' '+q[1]).join('')+'Z';
+const nf=n=>n.toLocaleString('en-US');
+const tk=n=>n>=100000?('Tk '+(n/100000).toFixed(2)+'L'):('Tk '+nf(n));
+
+/* ---------- map ---------- */
+function units(){ return lvl===0?D.regions:D.regions[ri].territories; }
+/* the shapes the view is zoomed to: a single territory once one is open */
+function focusUnits(){
+  if(lvl===2) return [D.regions[ri].territories[ti]];
+  return units();
+}
+function fit(u){
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  u.forEach(v=>v.poly.forEach(q=>{x0=Math.min(x0,q[0]);x1=Math.max(x1,q[0]);
+    y0=Math.min(y0,q[1]);y1=Math.max(y1,q[1]);}));
+  const m=(x1-x0)*0.10+14, w=x1-x0+2*m, h=y1-y0+2*m;
+  const AR=1/0.82; let vw=w,vh=w/AR; if(vh<h){vh=h;vw=h*AR;}
+  VB=[(x0+x1)/2-vw/2,(y0+y1)/2-vh/2,vw,vh];
+}
+function drawMap(){
+  const u=units(); fit(focusUnits()); svg.setAttribute('viewBox',VB.join(' '));
+  const K=VB[2]/D.W; svg.innerHTML='';
+  svg.appendChild(el('path',{d:pth(D.outline),fill:'none',
+    stroke:'#9FB0D0','stroke-width':(1.5*K).toFixed(2),
+    'stroke-opacity':lvl===0?1:0.45}));
+  if(lvl>=1) svg.appendChild(el('path',{d:pth(D.regions[ri].poly),fill:'none',
+    stroke:'#8FA0C8','stroke-width':(1.3*K).toFixed(2),'stroke-dasharray':(3*K)+' '+(3*K)}));
+  const g=el('g',{});
+  u.forEach((v,i)=>{
+    const sel=(lvl===2&&i===ti);
+    const p=el('path',{d:pth(v.poly),class:'poly'+(sel?' on':''),'data-i':i,
+      'stroke-width':((sel?1.8:1)*K).toFixed(2),
+      'stroke-opacity':(lvl===2&&!sel)?0.35:1});
+    p.addEventListener('click',()=>{ if(lvl===0){ri=i;lvl=1;} else {ti=i;lvl=2;} render(); });
+    g.appendChild(p);
+  });
+  svg.appendChild(g);
+  // labels: biggest first, skip any that would collide — no overlap on a small screen
+  const fs=11*K, placed=[], gl=el('g',{});
+  const lab = lvl===2 ? [{v:u[ti],i:ti}]
+            : u.map((v,i)=>({v,i})).sort((a,b)=>b.v.active-a.v.active);
+  lab.forEach(o=>{
+    const v=o.v, at=v.c, nm=v.name.length>17?v.name.slice(0,16)+'…':v.name;
+    const w=nm.length*fs*0.52, r={x0:at[0]-w/2,x1:at[0]+w/2,y0:at[1]-fs*1.5,y1:at[1]+fs*1.2};
+    if(placed.some(q=>!(r.x1<q.x0||r.x0>q.x1||r.y1<q.y0||r.y0>q.y1))) return;
+    placed.push(r);
+    const t1=el('text',{x:at[0],y:at[1]-1*K,'text-anchor':'middle',class:'lbl halo',
+      'font-size':fs.toFixed(2),'stroke-width':(2.8*K).toFixed(2)});
+    t1.textContent=nm; gl.appendChild(t1);
+    const t2=el('text',{x:at[0],y:at[1]+fs*0.95,'text-anchor':'middle',class:'lbl2 halo',
+      'font-size':(fs*0.8).toFixed(2),'stroke-width':(2.8*K).toFixed(2)});
+    const lq=(lvl===0?tallyRegion(v):tally(v));
+    t2.textContent=lq.buyers+' / '+lq.active; gl.appendChild(t2);
+  });
+  svg.appendChild(gl);
+  requestAnimationFrame(paintDots);
+}
+function paintDots(){
+  const w=wrap.clientWidth, h=Math.round(w*0.82);
+  sp.style.height=h+'px';
+  const dpr=Math.min(devicePixelRatio||1,2);
+  cv.width=w*dpr; cv.height=h*dpr;
+  const x=cv.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,w,h);
+  const s=Math.min(w/VB[2], h/VB[3]);
+  const ox=(w-VB[2]*s)/2, oy=(h-VB[3]*s)/2;
+  const r=Math.max(1.4,2.3*s);
+  const put=(arr,col)=>{x.fillStyle=col;arr.forEach(p=>{
+    x.beginPath();x.arc(ox+(p[0]-VB[0])*s,oy+(p[1]-VB[1])*s,r,0,6.2832);x.fill();});};
+  const u=units();
+  if(lvl===2){
+    const t=D.regions[ri].territories[ti], q=tally(t);
+    // neighbouring territories stay faintly visible for context
+    x.globalAlpha=.16;
+    u.forEach((v,i)=>{ if(i===ti) return;
+      if(show.M) put(v.mdots,'#D0342C'); if(show.B) put(v.dots,'#1E2761'); });
+    // the open territory recoloured to match the rep's marks
+    const pool=t.dots.concat(t.mdots);
+    x.globalAlpha=.72; if(show.M) put(pool.slice(q.buyers),'#D0342C');
+    x.globalAlpha=.9;  if(show.B) put(pool.slice(0,q.buyers),'#1E2761');
+  } else {
+    u.forEach(v=>{
+      const q=(lvl===0?tallyRegion(v):tally(v));
+      const pool=v.dots.concat(v.mdots);
+      x.globalAlpha=.72; if(show.M) put(pool.slice(q.buyers),'#D0342C');
+      x.globalAlpha=.85; if(show.B) put(pool.slice(0,q.buyers),'#1E2761');
+    });
+  }
+}
+function tog(k){show[k]=!show[k];
+  document.getElementById('lg'+k).classList.toggle('off',!show[k]); paintDots();}
+addEventListener('resize',()=>{drawMap();});
+
+/* ---------- visit log ---------- */
+const vkey=(t,code)=>t+'|'+code;
+/* a rep's mark overrides what the sales file says, so the counts move live */
+function effB(tname,c){ const m=ST.visit[vkey(tname,c[0])];
+  if(m==='v') return true; if(m==='r') return false; return c[3]>0; }
+function tally(t){
+  let b=0,m=0,mk=0,gain=0,lost=0;
+  t.chem.forEach(c=>{ const v=ST.visit[vkey(t.name,c[0])]; if(v) mk++;
+    const e=effB(t.name,c); if(e) b++; else m++;
+    if(v==='v'&&c[3]===0) gain++; if(v==='r'&&c[3]>0) lost++; });
+  return {buyers:b,missing:m,marked:mk,gain,lost,active:t.chem.length,
+          pen:+(t.chem.length? b/t.chem.length*100:0).toFixed(1)};
+}
+function isNew(tname,c){ return ST.visit[vkey(tname,c[0])]==='v' && c[3]===0; }
+function sumUp(list){
+  let b=0,a=0,mk=0,g=0,l=0;
+  list.forEach(q=>{b+=q.buyers;a+=q.active;mk+=q.marked;g+=q.gain;l+=q.lost;});
+  return {buyers:b,missing:a-b,active:a,marked:mk,gain:g,lost:l,
+          pen:+(a? b/a*100:0).toFixed(1)};
+}
+function tallyRegion(r){ return sumUp(r.territories.map(tally)); }
+function tallyZone(){ return sumUp(D.regions.map(tallyRegion)); }
+/* live figures for whatever the screen is showing */
+function liveFor(level,rIdx,tIdx){
+  if(level===2) return tally(D.regions[rIdx].territories[tIdx]);
+  if(level===1) return tallyRegion(D.regions[rIdx]);
+  return tallyZone();
+}
+function mark(t,code,state){
+  const k=vkey(t,code);
+  if(ST.visit[k]===state){ delete ST.visit[k]; } else { ST.visit[k]=state; }
+
+  const day=touchDay();
+  const rowc=(D.regions[ri].territories[ti].chem.find(c=>c[0]===code)||[]);
+  const st=ST.visit[k];
+  ST.log=ST.log.filter(x=>!(x.c===code && x.t===t && x.d===todayKey()));
+  if(st) ST.log.push({d:todayKey(),t:t,c:code,n:rowc[1]||'',s:st});
+  save(); refreshTotals(); paintDots(); drawMap(); renderChem(true); renderToday();
+  queueSend({r:D.regions[ri].key||D.regions[ri].name, t:t, c:code, n:rowc[1]||'',
+             s:(st==='v'?'ordered':'cleared'), d:new Date().toISOString()});
+  if(st==='v'){
+    buzz(28); confetti();
+    const q=tallyZone(), ts=todayStats(t), goal=goalOf(t);
+    if(ts.orders===goal) bigToast('🏆','Target reached in '+t,
+      ts.orders+' chemists sold to today. Zone coverage now '+q.pen+'%.');
+    else bigToast('🎉','New order logged',
+      (rowc[1]||'Chemist')+' moves to Already ordering. Zone coverage now '+q.pen+'%.');
+  }
+  {const q=tallyZone();
+   toast(st==='v' ? 'Order logged · zone '+q.pen+'%'
+       : 'Order removed · zone '+q.pen+'%');}
+}
+
+function refreshTotals(){
+  const q=liveFor(lvl,ri,ti);
+  document.getElementById('stats').innerHTML=
+    '<div class="st dark"><div class="v">'+nf(q.buyers)+'</div><div class="k">Ordered Gavirad</div></div>'
+   +'<div class="st"><div class="v">'+nf(q.missing)+'</div><div class="k">No order yet</div></div>'
+   +'<div class="st"><div class="v">'+q.pen+'%</div><div class="k">Coverage</div></div>';
+  document.getElementById('cB').textContent=nf(q.buyers);
+  document.getElementById('cM').textContent=nf(q.missing);
+}
+
+function goHome(){ lvl=0; ri=null; ti=null; render(); window.scrollTo(0,0); }
+
+
+/* ---------------- daily goal, streak and today's wins ---------------- */
+function dayKey(d){
+  d = d || new Date();
+  const p = n => String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());   // local date, not UTC
+}
+const todayKey=()=>dayKey();
+/* each territory has its own manager, so the target and the day's count are per territory */
+function curTerr(){
+  return (lvl>=2 && ri!==null && ti!==null) ? D.regions[ri].territories[ti].name : null;
+}
+function goalOf(tn){ return (tn && ST.goals && ST.goals[tn]) ? ST.goals[tn] : 15; }
+(function(){ let ch=false;
+  if(ST.goal && !ST.goals){ ST.goals={}; ch=true; }
+  if(!ST.goals){ ST.goals={}; }
+  Object.keys(ST.visit||{}).forEach(k=>{ if(ST.visit[k]==='r'){ delete ST.visit[k]; ch=true; }});
+  if(ST.log){ const n=ST.log.length; ST.log=ST.log.filter(x=>x.s!=='r'); if(n!==ST.log.length) ch=true; }
+  if(ch) save();
+})();
+function touchDay(){
+  const d=todayKey();
+  if(ST.last!==d){
+    const y=dayKey(new Date(Date.now()-864e5));
+    ST.streak = (ST.last===y)? (ST.streak||0)+1 : 1;
+    ST.last=d;
+  }
+  if(!ST.days[d]) ST.days[d]={marks:0,orders:0};
+  return ST.days[d];
+}
+function todayStats(tn){
+  const d=todayKey();
+  let rows=ST.log.filter(x=>x.d===d);
+  if(tn) rows=rows.filter(x=>x.t===tn);
+  return {marks:rows.length,
+          orders:rows.filter(x=>x.s==='v').length,
+          shops:new Set(rows.map(x=>x.c)).size};
+}
+function ringSvg(pc){
+  const R=26, C=2*Math.PI*R, off=C*(1-Math.min(pc,1));
+  return '<svg width="62" height="62" viewBox="0 0 62 62">'
+    +'<circle cx="31" cy="31" r="'+R+'" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="6"/>'
+    +'<circle cx="31" cy="31" r="'+R+'" fill="none" stroke="'+(pc>=1?'#54D191':'#E39A2B')
+    +'" stroke-width="6" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)
+    +'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>';
+}
+function renderToday(){
+  const box=document.getElementById('today'); if(!box) return;
+  touchDay();
+  const tn=curTerr();
+  const t=todayStats(tn), goal=goalOf(tn), pc=goal? t.orders/goal : 0;
+  const hit=t.orders>=goal;
+  const zoneToday=todayStats(null);
+  const zq=tallyZone();
+  const lead = !tn ? (zoneToday.orders? zoneToday.orders+' orders logged across the zone today'
+                                      : 'Open your territory to set a target')
+             : hit ? 'Target met — nice work'
+             : t.orders? ('Keep going — '+(goal-t.orders)+' more orders in '+tn)
+             : 'No orders logged yet in '+tn;
+  box.innerHTML=
+    '<div class="row1">'
+     +'<div class="ring">'+ringSvg(tn?pc:0)
+       +'<div class="pc">'+(tn? t.orders+'/'+goal : zoneToday.orders)+'</div></div>'
+     +'<div class="rlbl">calls</div>'
+     +'<div class="lead"><b>'+lead+'</b><span>'+(ST.streak||1)+'-day streak · '
+       +(tn? (tn+' target '+t.orders+' of '+goal)
+     : ('zone total today '+zoneToday.orders))
+       +' · '+nf(zq.buyers)+' of '+nf(zq.active)+' covered ('+zq.pen+'%)</span></div>'
+     +'<div class="streak">🔥 '+(ST.streak||1)+'d</div>'
+    +'</div>'
+    +'<div class="row2">'
+     +'<div class="cell'+(t.orders?' goalhit':'')+'"><div class="v">'+(tn?t.orders:zoneToday.orders)
+       +'</div><div class="k">Orders today'+(tn?'':' (zone)')+'</div></div>'
+     +'<div class="cell"><div class="v">'+(tn?Math.max(0,goal-t.orders):'—')
+       +'</div><div class="k">Left to target</div></div>'
+     +'<div class="cell"><div class="v">'+(zq.gain||0)+'</div><div class="k">New orders, all days</div></div>'
+    +'</div>'
+    +'<div class="note2">Orders are saved on this phone only. To let your manager see them, '
+     +'tap <b>Send report</b> and WhatsApp him the code. '
+     +'<span id="nmLink" style="color:#1E2761;text-decoration:underline">'
+     +(ST.rep? 'Reporting as '+ST.rep : 'Set your name')+'</span></div>'
+    +'<div class="row3">'
+     +'<button class="btn" id="gGoal">Set target</button>'
+     +'<button class="btn" id="gSum">Send report</button>'
+     +(tn? '<button class="btn" id="gReset">Undo today — '+tn+'</button>' : '')
+    +'</div>';
+  document.getElementById('gGoal').textContent = tn? 'Set target' : 'Target: open a territory';
+  document.getElementById('gGoal').onclick=()=>{
+    if(!curTerr()){ toast('Open a territory first — each one has its own target'); return; }
+    openGoal();
+  };
+  document.getElementById('gSum').onclick=openReport;
+  {const nl=document.getElementById('nmLink'); if(nl) nl.onclick=openName;}
+  {const rb=document.getElementById('gReset'); if(rb) rb.onclick=openReset;}
+}
+/* ---- report code: a compact block the manager pastes into his division file ---- */
+function buildReport(scope){
+  let rows=ST.log.filter(x=>x.s==='v');
+  if(scope==='today'){ const d=todayKey(); rows=rows.filter(x=>x.d===d); }
+  if(!rows.length) return null;
+  const who = ST.rep || '';
+  const lines = rows.map(x=>[x.d, x.t, x.c].join('~'));
+  return 'GVD1|'+ZONE+'|'+who+'|'+rows.length+'\n'+lines.join('\n')+'\nEND';
+}
+function openReport(){
+  const tn=curTerr();
+  const t=buildReport('today'), a=buildReport('all');
+  if(!t && !a){ toast('No orders marked yet'); return; }
+  openMdl('<h3>Send report</h3>'
+   +'<p>This code carries the orders you have marked. Copy it and send it to your manager on '
+   +'WhatsApp — he pastes it into his file and your work appears in his view. '
+   +'Nothing is uploaded anywhere.</p>'
+   +'<div class="mdlrow" style="margin-bottom:12px">'
+   +'<button class="btn" id="rpToday">Today</button>'
+   +'<button class="btn" id="rpAll">All days</button></div>'
+   +'<textarea id="rpbox" rows="5" readonly style="width:100%;border:1px solid #E4E9F2;'
+   +'border-radius:10px;padding:11px;font-size:12px;font-family:monospace;color:#1E2761;'
+   +'resize:none;margin-bottom:10px"></textarea>'
+   +'<div id="rpcount" style="font-size:11.5px;color:#5A6478;margin-bottom:12px"></div>'
+   +'<div class="mdlrow"><button class="btn" id="rpclose">Close</button>'
+   +'<button class="btn pri" id="rpcopy">Copy code</button></div>');
+  let cur='today';
+  const paint=()=>{
+    const code = cur==='today'? t : a;
+    document.getElementById('rpbox').value = code || '(nothing to send)';
+    const n = code? (code.split('\n').length-2) : 0;
+    document.getElementById('rpcount').textContent =
+      n+' order'+(n===1?'':'s')+(cur==='today'?' marked today':' marked in total')
+      +' across all your territories in '+ZONE;
+    document.getElementById('rpToday').classList.toggle('pri', cur==='today');
+    document.getElementById('rpAll').classList.toggle('pri', cur==='all');
+  };
+  document.getElementById('rpToday').onclick=()=>{cur='today';paint();};
+  document.getElementById('rpAll').onclick=()=>{cur='all';paint();};
+  document.getElementById('rpclose').onclick=closeMdl;
+  document.getElementById('rpcopy').onclick=()=>{
+    const v=document.getElementById('rpbox').value;
+    if(v && v[0]==='G'){ copyText(v); } else { toast('Nothing to copy'); }
+  };
+  paint();
+}
+function daySummary(){ openReport(); }
+/* ---------------- in-page dialogs (prompt/confirm are blocked in some viewers) ---- */
+function closeMdl(){ document.getElementById('mdl').classList.remove('on'); }
+function openMdl(html){
+  document.getElementById('mdlin').innerHTML=html;
+  document.getElementById('mdl').classList.add('on');
+}
+let goalTmp=15;
+function goalPaint(){
+  document.getElementById('gnum').textContent=goalTmp;
+  [10,15,20,25].forEach(v=>{
+    const el=document.getElementById('gp'+v);
+    if(el) el.classList.toggle('on', v===goalTmp);
+  });
+}
+function openGoal(){
+  const tn=curTerr(); if(!tn) return;
+  goalTmp=goalOf(tn);
+  openMdl('<h3>Daily target — '+tn+'</h3>'
+   +'<p>How many chemists will you sell to in a day <b>in this territory</b>? A call counts once '
+   +'at least one box is sold. Each territory keeps its own target and its own daily count, so '
+   +'setting this one does not affect any other territory. It stays until you change it; the '
+   +'count resets on its own at midnight, on this phone’s clock. The target itself is not '
+   +'cleared — it carries over every day until you change it.</p>'
+   +'<div class="stepper"><button class="b" id="gminus">−</button>'
+   +'<div class="n" id="gnum">15</div><button class="b" id="gplus">+</button></div>'
+   +'<div class="presets">'+[10,15,20,25].map(v=>'<div class="p" id="gp'+v+'">'+v+'</div>').join('')+'</div>'
+   +'<div class="mdlrow"><button class="btn" id="gcancel">Cancel</button>'
+   +'<button class="btn pri" id="gsave">Save target</button></div>');
+  goalPaint();
+  document.getElementById('gminus').onclick=()=>{goalTmp=Math.max(1,goalTmp-1);goalPaint();};
+  document.getElementById('gplus').onclick=()=>{goalTmp=Math.min(200,goalTmp+1);goalPaint();};
+  [10,15,20,25].forEach(v=>{document.getElementById('gp'+v).onclick=()=>{goalTmp=v;goalPaint();};});
+  document.getElementById('gcancel').onclick=closeMdl;
+  document.getElementById('gsave').onclick=()=>{
+    ST.goals=ST.goals||{}; ST.goals[tn]=goalTmp; save(); closeMdl(); renderToday();
+    toast(tn+' target set to '+goalTmp);
+  };
+}
+function openName(){
+  let tmp=ST.rep||'';
+  openMdl('<h3>Your name</h3>'
+   +'<p>Your name is written into the report code so your manager knows whose orders he is '
+   +'looking at. It is stored on this phone only.</p>'
+   +'<input id="nmbox" value="'+tmp.replace(/"/g,'&quot;')+'" placeholder="e.g. Rahim Uddin" '
+   +'style="width:100%;border:1px solid #E4E9F2;border-radius:10px;padding:12px;font-size:16px;'
+   +'font-family:inherit;color:#1E2761;margin-bottom:12px">'
+   +'<div class="mdlrow"><button class="btn" id="nmcancel">Cancel</button>'
+   +'<button class="btn pri" id="nmsave">Save</button></div>');
+  document.getElementById('nmcancel').onclick=closeMdl;
+  document.getElementById('nmsave').onclick=()=>{
+    ST.rep=(document.getElementById('nmbox').value||'').trim();
+    save(); closeMdl(); renderToday(); toast(ST.rep?('Name set: '+ST.rep):'Name cleared'); };
+}
+function openReset(){
+  const tn=curTerr();
+  if(!tn){ toast('Open a territory first — you can only undo your own territory'); return; }
+  const n=todayStats(tn).marks;
+  if(!n){ toast('Nothing logged today in '+tn); return; }
+  openMdl('<h3>Undo today’s orders in '+tn+'?</h3>'
+   +'<p>'+n+' order'+(n>1?'s':'')+' logged today in <b>'+tn+'</b> will be removed. '
+   +'Nothing else is touched — other territories keep their orders, and earlier days in this '
+   +'territory are kept too. Marks live only on this phone, so no other MIO is affected.</p>'
+   +'<div class="mdlrow"><button class="btn" id="rcancel">Keep them</button>'
+   +'<button class="btn pri" id="rok">Undo '+n+' order'+(n>1?'s':'')+'</button></div>');
+  document.getElementById('rcancel').onclick=closeMdl;
+  document.getElementById('rok').onclick=()=>{
+    if(!tn){ closeMdl(); return; }
+    const d=todayKey();
+    ST.log.filter(x=>x.d===d && x.t===tn).forEach(x=>{ delete ST.visit[x.t+'|'+x.c]; });
+    ST.log=ST.log.filter(x=>!(x.d===d && x.t===tn));
+    save(); closeMdl(); render(); toast('Undone in '+tn);
+  };
+}
+
+/* ---------------- celebration ---------------- */
+function buzz(ms){ try{ navigator.vibrate && navigator.vibrate(ms); }catch(e){} }
+function confetti(){
+  const box=document.getElementById('cfx'); if(!box) return;
+  const cols=['#E39A2B','#1E2761','#54D191','#CADCFC','#D0342C'];
+  let h='';
+  for(let i=0;i<26;i++){
+    h+='<i style="left:'+(Math.random()*100).toFixed(1)+'%;background:'
+      +cols[i%cols.length]+';animation-delay:'+(Math.random()*.35).toFixed(2)+'s"></i>';
+  }
+  box.innerHTML=h; setTimeout(()=>box.innerHTML='',1900);
+}
+function bigToast(em,t1,t2){
+  const b=document.getElementById('big');
+  b.innerHTML='<div class="em">'+em+'</div><div class="t1">'+t1+'</div>'
+             +'<div class="t2">'+t2+'</div>';
+  b.classList.add('on'); clearTimeout(b._h);
+  b._h=setTimeout(()=>b.classList.remove('on'),2100);
+}
+/* ---------------- biggest remaining opportunity ---------------- */
+function topOpportunity(t){
+  return t.chem.filter(c=>!effB(t.name,c))
+               .sort((a,b)=>b[4]-a[4])[0] || null;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const hT=document.getElementById('hT'), hS=document.getElementById('hS');
+  const cr=document.getElementById('crumb'), body=document.getElementById('body');
+  const mineBar=document.getElementById('mine');
+
+  // breadcrumb
+  let bits=[['Zone',()=>{lvl=0;ri=null;ti=null;render();}]];
+  if(lvl>=1) bits.push([D.regions[ri].name,()=>{lvl=1;ti=null;render();}]);
+  if(lvl>=2) bits.push([D.regions[ri].territories[ti].name,null]);
+  cr.innerHTML='';
+  bits.forEach((b,i)=>{
+    const s=document.createElement('span'); s.className='c'+(i===bits.length-1?' now':'');
+    s.textContent=b[0]; if(b[1]) s.onclick=b[1]; cr.appendChild(s);
+  });
+
+  // my-territory shortcut
+  if(ST.mine){
+    const [rI,tI]=ST.mine;
+    const nm=D.regions[rI].territories[tI].name;
+    mineBar.innerHTML='<b>My territory: '+nm+'</b>';
+    const go=document.createElement('button'); go.className='btn pri sm'; go.textContent='Open';
+    go.onclick=()=>{ri=rI;ti=tI;lvl=2;render();window.scrollTo(0,0);};
+    const cl=document.createElement('button'); cl.className='btn sm'; cl.textContent='Change';
+    cl.onclick=()=>{ST.mine=null;save();render();};
+    mineBar.appendChild(go); mineBar.appendChild(cl);
+  } else {
+    mineBar.innerHTML='<b>Open your territory, then tap “Set as my territory” to land here next time.</b>';
+
+  }
+
+  let u,tot;
+  tot = liveFor(lvl,ri,ti);
+
+  hT.textContent = lvl===0?ZONE+' zone'
+                 : lvl===1?D.regions[ri].name
+                 : D.regions[ri].territories[ti].name;
+  hS.textContent = lvl===0?(D.regions.length+' regions · '+D.total.terr+' territories')
+                 : lvl===1?(D.regions[ri].terrCount+' territories')
+                 : 'Chemist call list';
+
+  document.getElementById('stats').innerHTML=
+    '<div class="st dark"><div class="v">'+nf(tot.buyers)+'</div><div class="k">Ordered Gavirad</div></div>'
+   +'<div class="st"><div class="v">'+nf(tot.missing)+'</div><div class="k">No order yet</div></div>'
+   +'<div class="st"><div class="v">'+tot.pen+'%</div><div class="k">Coverage</div></div>';
+  document.getElementById('cB').textContent=nf(tot.buyers);
+  document.getElementById('cM').textContent=nf(tot.missing);
+  document.getElementById('lgB').classList.toggle('off',!show.B);
+  document.getElementById('lgM').classList.toggle('off',!show.M);
+
+  drawMap();
+  renderToday();
+
+  if(lvl<2){
+    const list=lvl===0?D.regions:D.regions[ri].territories;
+    body.innerHTML='<h2>'+(lvl===0?'Regions':'Territories')+' — weakest coverage first</h2>';
+    list.map((v,i)=>({v,i,q:(lvl===0?tallyRegion(v):tally(v))}))
+        .sort((a,b)=>a.q.pen-b.q.pen).forEach(o=>{
+      const v=o.v, q=o.q, d=document.createElement('div'); d.className='item';
+      d.innerHTML='<div class="nm">'+v.name
+        +'<div class="sub">'+nf(q.buyers)+' ordered · <b style="color:#D0342C">'+nf(q.missing)
+        +' not covered</b>'+(q.gain?' · <b style="color:#1E8E5A">+'+q.gain+' today</b>':'')
+        +'</div></div>'
+        +'<span class="pill '+(q.pen<57.8?'low':'ok')+'">'+q.pen+'%</span><span class="chev">›</span>';
+      d.onclick=()=>{ if(lvl===0){ri=o.i;lvl=1;} else {ti=o.i;lvl=2;} render(); window.scrollTo(0,0); };
+      body.appendChild(d);
+    });
+    document.getElementById('note').textContent =
+      'Tap a '+(lvl===0?'region':'territory')+' to go deeper. Navy dots are chemists who ordered '
+      +'Gavirad, red are chemists with no order. Dot positions show density, not shop addresses.';
+  } else {
+    renderChem(true);
+  }
+}
+
+function renderChem(keepScroll){
+  const t=D.regions[ri].territories[ti];
+  const body=document.getElementById('body');
+  const y=keepScroll?0:window.scrollY;
+  const q0=tally(t), done=q0.marked;
+  body.innerHTML=
+    '<h2>'+t.name+' — call list</h2>'
+   +'<div class="prog"><i style="width:'+(t.chem.length?done/t.chem.length*100:0)+'%"></i></div>'
+   +'<div style="font-size:11.5px;color:#5A6478;margin-bottom:9px">'+done+' of '+t.chem.length
+   +' chemists marked'
+   +(q0.gain?' · <b style="color:#1E8E5A">+'+q0.gain+' new order'+(q0.gain>1?'s':'')+'</b>':'')
+   +(q0.lost?' · <b style="color:#D0342C">−'+q0.lost+'</b>':'')+'</div>'
+   +'<div class="tabs">'
+   +'<div class="tab'+(tab==='M'?' act red':'')+'" id="tM">No order yet<b>'+nf(q0.missing)+'</b></div>'
+   +'<div class="tab'+(tab==='B'?' act':'')+'" id="tB">Already ordering<b>'+nf(q0.buyers)+'</b></div>'
+   +'</div>'
+   +'<div class="tools">'
+   +'<input class="s" id="q" placeholder="Search name or code" value="">'
+   +'<select class="s" id="sb"><option value="value">Sort: value high → low</option>'
+   +'<option value="name">Sort: name A → Z</option></select>'
+   +'<button class="btn sm" id="of">'+(onlyOpen?'✓ Unvisited only':'Unvisited only')+'</button>'
+   +'<button class="btn sm" id="mine2">★ Set as my territory</button>'
+   +'</div><div id="nudge"></div>'
+   +'<div style="font-size:11px;color:#96A0B5;margin:-2px 0 9px;line-height:1.5">'
+   +'A call counts once at least one box is sold. Tap “✓ Ordered today” again to undo.</div>'
+   +'<div id="rows"></div>';
+  (function(){
+    const box=document.getElementById('nudge'); if(!box) return;
+    const top=topOpportunity(t); if(!top){ box.innerHTML=''; return; }
+    box.innerHTML='<div class="nudge"><span class="ic">🎯</span>'
+      +'<span class="tx"><b>'+top[1]+'</b>Biggest untapped shop here — '+tk(top[4])
+      +' of Radiant business, no Gavirad yet</span><span class="go">Mark →</span></div>';
+    box.querySelector('.nudge').onclick=()=>{ tab='M'; onlyOpen=false;
+      renderChem(true);
+      const q=document.getElementById('q'); if(q){ q.value=top[0]; q.oninput(); } };
+  })();
+
+  document.getElementById('tM').onclick=()=>{tab='M';renderChem(true);};
+  document.getElementById('tB').onclick=()=>{tab='B';renderChem(true);};
+  document.getElementById('sb').value=sortBy;
+  document.getElementById('sb').onchange=e=>{sortBy=e.target.value;rows();};
+  document.getElementById('of').onclick=()=>{onlyOpen=!onlyOpen;renderChem(true);};
+  document.getElementById('mine2').onclick=()=>{ST.mine=[ri,ti];save();render();toast('Saved as your territory');};
+  const q=document.getElementById('q'); q.oninput=rows;
+
+  function rows(){
+    const want=tab==='B';
+    let list=t.chem.filter(c=>effB(t.name,c)===want);
+    const term=q.value.trim().toLowerCase();
+    if(term) list=list.filter(c=>c[1].toLowerCase().includes(term)||c[0].includes(term));
+    if(onlyOpen) list=list.filter(c=>!ST.visit[vkey(t.name,c[0])]);
+    list=list.slice().sort((a,b)=>{
+      if(sortBy==='name') return a[1].localeCompare(b[1]);
+      const an=isNew(t.name,a), bn=isNew(t.name,b);
+      if(want && an!==bn) return an?-1:1;          // newly marked orders pinned on top
+      const av=want?(a[2]||a[4]):a[4], bv=want?(b[2]||b[4]):b[4];
+      return bv-av;
+    });
+    const box=document.getElementById('rows');
+    if(!list.length){box.innerHTML='<div class="empty">No chemist matches.</div>';return;}
+    box.innerHTML=list.map(c=>{
+      const st=ST.visit[vkey(t.name,c[0])];
+      const nw=isNew(t.name,c);
+      const val = want ? (c[2]>0?c[2]:c[4]) : c[4];
+      return '<div class="ch'+(st==='v'?' done':st==='r'?' refused':'')+'">'
+      +'<div class="top"><div class="n">'+(nw?'<span class="tagnew">NEW</span> ':'')+c[1]+'</div>'
+      +'<div class="v" style="color:'+(want?'#1E2761':'#D0342C')+'">'+tk(val)+'</div></div>'
+      +'<div class="meta">Code '+c[0]+(want
+          ? (c[2]>0?' · ordered '+c[3]+' of 8 months':' · marked by you today · Radiant business')
+          : (st==='r'?' · you marked no order · Radiant business':' · total Radiant business'))+'</div>'
+      +'<div class="acts">'
+      +'<button class="btn'+(st==='v'?' on-v':'')+'" data-c="'+c[0]+'" data-s="v">'
+      +(st==='v'?'✓ Ordered today':'Mark ordered')+'</button>'
+      +'<button class="btn" data-cp="'+c[0]+' '+c[1].replace(/"/g,'')+'">Copy</button>'
+      +'</div></div>';
+    }).join('');
+    box.querySelectorAll('button[data-s]').forEach(b=>
+      b.onclick=()=>mark(t.name,b.dataset.c,b.dataset.s));
+    box.querySelectorAll('button[data-cp]').forEach(b=>
+      b.onclick=()=>copyText(b.dataset.cp));
+  }
+  rows();
+  document.getElementById('note').textContent =
+    'Marking a chemist moves them between the two tabs and updates the counts straight away — '
+   +'mark one as ordered and “No order yet” drops by one while “Already ordering” goes up by one. '
+   +'Tap the same button again to undo. Marks are saved on this phone only.';
+  if(!keepScroll) window.scrollTo(0,y);
+}
+
+
+/* ---------------- cloud push (queued while offline) ---------------- */
+const ENDPOINT="https://script.google.com/macros/s/AKfycbxzXp-SiNm9gTuIPjeoKoBbYMlS71Wt5iTtCN5ehQYgqpWerdYul1CXu9LB1mYVy20_/exec";
+let sending=false;
+function queueSend(m){ ST.out=ST.out||[]; ST.out.push(m); save(); pushNext(); paintSync(); }
+function pushNext(){
+  if(sending || !ST.out || !ST.out.length) return;
+  if(navigator.onLine===false){ paintSync(); return; }
+  sending=true; paintSync();
+  const m=ST.out[0];
+  const q='?rep='+encodeURIComponent(ST.rep||'')+'&zone='+encodeURIComponent(ZONE)
+   +'&region='+encodeURIComponent(m.r)+'&territory='+encodeURIComponent(m.t)
+   +'&code='+encodeURIComponent(m.c)+'&name='+encodeURIComponent(m.n)
+   +'&status='+encodeURIComponent(m.s)+'&time='+encodeURIComponent(m.d)+'&cb='+Date.now();
+  const img=new Image(); let done=false;
+  const fin=ok=>{ if(done)return; done=true;
+    if(ok){ ST.out.shift(); ST.synced=Date.now(); save(); }
+    sending=false; paintSync(); if(ST.out.length) setTimeout(pushNext, ok?200:8000); };
+  img.onload=()=>fin(true); img.onerror=()=>fin(true);
+  setTimeout(()=>fin(false),12000);
+  img.src=ENDPOINT+q;
+}
+function paintSync(){
+  const b=document.getElementById('sync'); if(!b) return;
+  const n=(ST.out||[]).length;
+  b.className='syncbar'+(n?' wait':'');
+  b.innerHTML='<span class="dot"></span><span>'+(n? n+' order'+(n>1?'s':'')+' waiting to send'
+    : 'All orders sent'+(ST.synced? ' · '+new Date(ST.synced).toLocaleTimeString([],
+      {hour:'2-digit',minute:'2-digit'}):''))+'</span>'
+    +'<span style="margin-left:6px">· <b>'+(ST.rep||'no name')+'</b> · '+ZONE+'</span>'
+    +'<button class="btn" onclick="pushNext()">Sync</button>';
+}
+addEventListener('online',()=>pushNext());
+
+/* ---------------- login gate ---------------- */
+var ZONE='', D=null, ZIDX=null;
+const gEl=id=>document.getElementById(id);
+function fillSel(sel,list,ph){
+  sel.innerHTML='<option value="">'+ph+'</option>'+list.map(v=>'<option>'+v+'</option>').join('');
+}
+fetch('data/zones.json').then(r=>r.json()).then(ix=>{
+  ZIDX=ix;
+  fillSel(gEl('gZone'), ix.map(z=>z.zone), 'Select zone');
+  const s=ST.picked;
+  if(s){ gEl('gName').value=ST.rep||''; gEl('gZone').value=s.z; onZone(); gEl('gReg').value=s.r;
+         onReg(); gEl('gTerr').value=s.t; }
+}).catch(()=>{ gEl('gErr').style.display='block';
+  gEl('gErr').textContent='Could not load the zone list. Check your connection and reload.'; });
+function onZone(){
+  const z=ZIDX.find(x=>x.zone===gEl('gZone').value);
+  fillSel(gEl('gReg'), z? z.regions.map(r=>r.n):[], z?'Select region':'Select zone first');
+  fillSel(gEl('gTerr'), [], 'Select region first');
+}
+function onReg(){
+  const z=ZIDX.find(x=>x.zone===gEl('gZone').value);
+  const r=z&&z.regions.find(x=>x.n===gEl('gReg').value);
+  fillSel(gEl('gTerr'), r? r.terr:[], r?'Select territory':'Select region first');
+}
+gEl('gZone').onchange=onZone; gEl('gReg').onchange=onReg;
+gEl('gGo').onclick=()=>{
+  const nm=gEl('gName').value.trim(), z=gEl('gZone').value,
+        r=gEl('gReg').value, t=gEl('gTerr').value;
+  if(!nm||!z||!r||!t){ gEl('gErr').style.display='block';
+    gEl('gErr').textContent='Please fill your name, zone, region and territory.'; return; }
+  gEl('gGo').textContent='Loading…'; gEl('gErr').style.display='none';
+  const zi=ZIDX.find(x=>x.zone===z);
+  fetch(zi.file).then(x=>x.json()).then(data=>{
+    D=data; ZONE=z; ST.rep=nm; ST.picked={z:z,r:r,t:t};
+    const rj=D.regions.findIndex(x=>x.name===r);
+    const tj=rj>=0? D.regions[rj].territories.findIndex(x=>x.name===t) : -1;
+    ST.mine=(rj>=0&&tj>=0)?[rj,tj]:null; save();
+    document.getElementById('gate').style.display='none';
+    document.getElementById('app').style.display='';
+    if(ST.mine){ ri=ST.mine[0]; ti=ST.mine[1]; lvl=2; } else { lvl=0; }
+    render(); paintSync(); pushNext();
+  }).catch(()=>{ gEl('gGo').textContent='Open my chemist list';
+    gEl('gErr').style.display='block';
+    gEl('gErr').textContent='Could not load that zone. Check your connection and try again.'; });
+};
+</script>

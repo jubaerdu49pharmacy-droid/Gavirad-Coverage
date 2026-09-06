@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gavirad Coverage — Admin Panel</title>
+<style>
+  :root{--navy:#1E2761;--navyd:#141A44;--amber:#E39A2B;--red:#D0342C;--green:#1E8E5A;
+        --ice:#CADCFC;--icel:#EEF4FE;--grey:#5A6478;--line:#E4E9F2}
+  *{box-sizing:border-box}
+  body{margin:0;background:#F5F7FB;color:var(--navy);
+       font-family:-apple-system,"Segoe UI",Roboto,Calibri,system-ui,sans-serif;font-size:15px}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 18px 40px}
+  header{background:linear-gradient(135deg,#141A44 0%,#2C3A7A 100%);color:#fff;
+         padding:18px 0 20px;margin-bottom:18px}
+  header .in{max-width:1180px;margin:0 auto;padding:0 18px;display:flex;align-items:center;gap:14px}
+  header .mk{display:flex;gap:3px}
+  header .mk i{width:9px;height:9px;border-radius:50%;display:block}
+  header .mk i:nth-child(1){background:var(--amber)}
+  header .mk i:nth-child(2){background:var(--ice)}
+  header .mk i:nth-child(3){background:var(--red)}
+  header h1{font-size:19px;margin:0;font-weight:700;flex:1}
+  header .sub{font-size:12px;color:var(--ice);margin-top:2px;font-weight:400}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 14px;
+       font-size:13.5px;font-family:inherit;color:var(--navy);cursor:pointer;white-space:nowrap}
+  .btn:hover{background:var(--icel)}
+  .btn.pri{background:var(--amber);border-color:var(--amber);color:#141A44;font-weight:700}
+  .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.3)}
+  .filters{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px;
+           display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px}
+  .fl{flex:1;min-width:170px}
+  .fl label{display:block;font-size:10.5px;letter-spacing:.8px;color:var(--grey);
+            text-transform:uppercase;font-weight:700;margin-bottom:5px}
+  select,input[type=date]{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 10px;
+          font-size:14px;font-family:inherit;color:var(--navy);background:#fff}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;
+         margin-bottom:16px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px}
+  .card.dark{background:var(--navy);border-color:var(--navy)}
+  .card .v{font-family:Cambria,Georgia,serif;font-size:27px;font-weight:800;line-height:1.1}
+  .card.dark .v{color:var(--amber)}
+  .card .k{font-size:11.5px;color:var(--grey);margin-top:4px}
+  .card.dark .k{color:var(--ice)}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px;
+         margin-bottom:16px}
+  .panel h2{font-size:11px;letter-spacing:1.2px;color:var(--amber);margin:0 0 12px;
+            text-transform:uppercase}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;font-size:10.5px;color:var(--grey);font-weight:700;padding:0 8px 8px;
+     border-bottom:1px solid var(--line);text-transform:uppercase;letter-spacing:.5px}
+  th.n,td.n{text-align:right}
+  td{padding:9px 8px;border-bottom:1px solid #F4F6FA}
+  tbody tr:hover td{background:var(--icel)}
+  td.nm{font-weight:700}
+  .bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden;min-width:70px}
+  .bar i{display:block;height:100%;background:var(--green)}
+  .status{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:16px}
+  .status.load{background:#FFF8EC;color:#8A6510;border:1px solid #F0DFC0}
+  .status.err{background:#FDF0EF;color:#A32B22;border:1px solid #F0CFCC}
+  .status.ok{background:#EEF7F2;color:#186B45;border:1px solid #CFE7DC}
+  .empty{padding:26px;text-align:center;color:var(--grey)}
+  .links{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .foot{font-size:11.5px;color:#96A0B5;line-height:1.6}
+  @media(max-width:760px){header h1{font-size:16px}}
+</style>
+
+<header><div class="in">
+  <span class="mk"><i></i><i></i><i></i></span>
+  <div style="flex:1"><h1>Gavirad Coverage — Admin Panel</h1>
+    <div class="sub" id="hsub">Live field reporting</div></div>
+  <button class="btn ghost" onclick="load()">Refresh</button>
+</div></header>
+
+<div class="wrap">
+  <div id="status" class="status load">Loading field data…</div>
+
+  <div class="links">
+    <a class="btn pri" id="lnkXlsx" target="_blank" rel="noopener">Download Excel</a>
+    <a class="btn" id="lnkSheet" target="_blank" rel="noopener">Open Google Sheet</a>
+    <button class="btn" onclick="downloadCsv()">Export this view (CSV)</button>
+  </div>
+
+  <div class="filters">
+    <div class="fl"><label>Division</label><select id="fDiv"></select></div>
+    <div class="fl"><label>Zone</label><select id="fZone"></select></div>
+    <div class="fl"><label>Region</label><select id="fReg"></select></div>
+    <div class="fl"><label>Territory</label><select id="fTerr"></select></div>
+    <div class="fl"><label>MIO</label><select id="fRep"></select></div>
+    <div class="fl" style="max-width:150px"><label>From</label><input type="date" id="fFrom"></div>
+    <div class="fl" style="max-width:150px"><label>To</label><input type="date" id="fTo"></div>
+    <button class="btn" onclick="resetFilters()">Clear</button>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="panel"><h2>By MIO</h2><div id="tRep"></div></div>
+  <div class="panel"><h2>By territory</h2><div id="tTerr"></div></div>
+  <div class="panel"><h2>Daily activity</h2><div id="tDay"></div></div>
+  <div class="panel"><h2>Latest orders</h2><div id="tRaw"></div></div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const ENDPOINT="https://script.google.com/macros/s/AKfycbxzXp-SiNm9gTuIPjeoKoBbYMlS71Wt5iTtCN5ehQYgqpWerdYul1CXu9LB1mYVy20_/exec";
+const SHEET_ID="1ihtGNSq8GKZ5IjRHREJrK-QAQO4a1aCD1Ms5YBejPRI";
+const Z2D={"Bogura":"Bogura","Dinajpur":"Bogura","Kushtia":"Bogura","Rajshahi":"Bogura","Rangpur":"Bogura","Chattogram-A":"Chattogram","Chattogram-B":"Chattogram","Chattogram-C":"Chattogram","Chattogram-D":"Chattogram","Cox Bazar":"Chattogram","Chandpur":"Cumilla","Cumilla":"Cumilla","Cumilla-B":"Cumilla","Feni":"Cumilla","Maizdee":"Cumilla","Dhaka-B":"Dhaka North","Dhaka-C":"Dhaka North","Dhaka-I":"Dhaka North","Gazipur":"Dhaka North","Uttara":"Dhaka North","Dhaka-A":"Dhaka South","Dhaka-D":"Dhaka South","Narayangonj":"Dhaka South","Savar":"Dhaka South","Tangail":"Dhaka South","Barishal-A":"Khulna","Barishal-B":"Khulna","Faridpur":"Khulna","Jashore":"Khulna","Khulna":"Khulna","B. Baria":"Sylhet","Mymensingh":"Sylhet","Narsingdi":"Sylhet","Sylhet-A":"Sylhet","Sylhet-B":"Sylhet"};
+let ROWS=[];
+
+document.getElementById('lnkSheet').href =
+  'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/edit';
+document.getElementById('lnkXlsx').href =
+  'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/export?format=xlsx';
+
+const nf=n=>n.toLocaleString('en-US');
+const el=id=>document.getElementById(id);
+function setStatus(cls,msg){ const s=el('status'); s.className='status '+cls; s.textContent=msg; }
+
+/* ---- read the log: JSONP, because Apps Script sends no CORS headers ---- */
+function load(){
+  setStatus('load','Loading field data…');
+  const cb='cb'+Date.now();
+  window[cb]=function(res){
+    delete window[cb];
+    if(!res || !res.rows){ setStatus('err','The server replied but sent no rows.'); return; }
+    ROWS=res.rows.map(r=>({
+      ts:r[0]||'', rep:(r[1]||'').trim()||'(unnamed)', zone:(r[2]||'').trim(),
+      region:(r[3]||'').trim(), terr:(r[4]||'').trim(), code:String(r[5]||'').trim(),
+      name:(r[6]||'').trim(), status:(r[7]||'').trim(), when:(r[8]||'').slice(0,10)
+    })).filter(r=>r.status==='ordered');
+    setStatus('ok',nf(ROWS.length)+' orders received from the field. Last refreshed '
+      +new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'.');
+    buildFilters(); apply();
+  };
+  const s=document.createElement('script');
+  s.src=ENDPOINT+'?action=read&callback='+cb+'&t='+Date.now();
+  s.onerror=()=>{ delete window[cb];
+    setStatus('err','Could not reach the server. Check that the Apps Script is deployed with '
+      +'access set to Anyone, and that it handles action=read.'); };
+  document.body.appendChild(s);
+}
+
+/* ---- cascading filters ---- */
+function opts(sel,list,label){
+  const cur=sel.value;
+  sel.innerHTML='<option value="">'+label+'</option>'
+    +list.map(v=>'<option>'+v+'</option>').join('');
+  if(list.indexOf(cur)>=0) sel.value=cur; else sel.value='';
+}
+function uniq(a){ return [...new Set(a.filter(Boolean))].sort(); }
+function divOf(z){ return Z2D[z]||''; }
+function buildFilters(){
+  opts(el('fDiv'), uniq(Object.values(Z2D)), 'All divisions');
+  cascade();
+  el('fRep').onchange=apply;
+  ['fDiv','fZone','fReg','fTerr'].forEach(id=>el(id).onchange=()=>{cascade(id);apply();});
+  ['fFrom','fTo'].forEach(id=>el(id).onchange=apply);
+}
+function cascade(changed){
+  if(changed==='fDiv'){ el('fZone').value=''; el('fReg').value=''; el('fTerr').value=''; }
+  if(changed==='fZone'){ el('fReg').value=''; el('fTerr').value=''; }
+  if(changed==='fReg'){ el('fTerr').value=''; }
+  const d=el('fDiv').value, z=el('fZone').value, r=el('fReg').value;
+  opts(el('fZone'), uniq(ROWS.filter(x=>!d||divOf(x.zone)===d).map(x=>x.zone)), 'All zones');
+  opts(el('fReg'),  uniq(ROWS.filter(x=>(!d||divOf(x.zone)===d)&&(!z||x.zone===z))
+        .map(x=>x.region)), 'All regions');
+  opts(el('fTerr'), uniq(ROWS.filter(x=>(!d||divOf(x.zone)===d)&&(!z||x.zone===z)
+        &&(!r||x.region===r)).map(x=>x.terr)), 'All territories');
+  opts(el('fRep'),  uniq(filtered(true).map(x=>x.rep)), 'All MIOs');
+}
+function filtered(skipRep){
+  const d=el('fDiv').value, z=el('fZone').value, r=el('fReg').value, t=el('fTerr').value;
+  const rep=skipRep?'':el('fRep').value, f=el('fFrom').value, to=el('fTo').value;
+  return ROWS.filter(x=>
+    (!d||divOf(x.zone)===d) && (!z||x.zone===z) && (!r||x.region===r) && (!t||x.terr===t)
+    && (!rep||x.rep===rep) && (!f||x.when>=f) && (!to||x.when<=to));
+}
+function resetFilters(){
+  ['fDiv','fZone','fReg','fTerr','fRep','fFrom','fTo'].forEach(id=>el(id).value='');
+  cascade(); apply();
+}
+
+/* ---- summary + tables ---- */
+function apply(){
+  const rows=filtered();
+  const today=new Date(); const p=n=>String(n).padStart(2,'0');
+  const tk=today.getFullYear()+'-'+p(today.getMonth()+1)+'-'+p(today.getDate());
+  const reps=new Set(rows.map(x=>x.rep)), terrs=new Set(rows.map(x=>x.terr));
+  const shops=new Set(rows.map(x=>x.zone+'|'+x.code));
+  const days=new Set(rows.map(x=>x.when));
+  el('cards').innerHTML=
+     card(nf(rows.length),'Orders logged',true)
+    +card(nf(shops.size),'Chemists converted')
+    +card(nf(rows.filter(x=>x.when===tk).length),'Logged today')
+    +card(nf(reps.size),'MIOs reporting')
+    +card(nf(terrs.size),'Territories touched')
+    +card(days.size? (rows.length/days.size).toFixed(1):'0','Orders per active day');
+
+  el('tRep').innerHTML = table(group(rows,'rep'), 'MIO', rows.length);
+  el('tTerr').innerHTML = table(group(rows,'terr'), 'Territory', rows.length, true);
+  el('tDay').innerHTML = table(group(rows,'when',true), 'Date', rows.length);
+
+  const latest=rows.slice().sort((a,b)=>(b.ts+'').localeCompare(a.ts+'')).slice(0,60);
+  el('tRaw').innerHTML = latest.length? '<table><thead><tr><th>Date</th><th>MIO</th>'
+    +'<th>Zone</th><th>Territory</th><th>Chemist</th><th>Code</th></tr></thead><tbody>'
+    +latest.map(r=>'<tr><td>'+r.when+'</td><td class="nm">'+r.rep+'</td><td>'+r.zone
+    +'</td><td>'+r.terr+'</td><td>'+r.name+'</td><td>'+r.code+'</td></tr>').join('')
+    +'</tbody></table>' : '<div class="empty">Nothing matches these filters.</div>';
+
+  el('foot').innerHTML='Figures count orders reported by MIOs in the trackers — they are field '
+    +'claims, not invoiced sales. Reconcile against the sales file before using them in a review. '
+    +'Data source: Google Sheet, refreshed when you tap Refresh.';
+}
+function card(v,k,dark){ return '<div class="card'+(dark?' dark':'')+'"><div class="v">'+v
+  +'</div><div class="k">'+k+'</div></div>'; }
+function group(rows,key,sortKey){
+  const m={};
+  rows.forEach(r=>{ const k=r[key]||'(blank)';
+    m[k]=m[k]||{n:0,shops:new Set(),last:''};
+    m[k].n++; m[k].shops.add(r.code); if(r.when>m[k].last) m[k].last=r.when; });
+  const out=Object.keys(m).map(k=>({k:k,n:m[k].n,shops:m[k].shops.size,last:m[k].last}));
+  return sortKey? out.sort((a,b)=>b.k.localeCompare(a.k)) : out.sort((a,b)=>b.n-a.n);
+}
+function table(data,label,total,showLast){
+  if(!data.length) return '<div class="empty">Nothing matches these filters.</div>';
+  const max=Math.max(...data.map(d=>d.n));
+  return '<table><thead><tr><th>'+label+'</th><th class="n">Orders</th>'
+    +'<th class="n">Chemists</th>'+(showLast?'<th class="n">Last</th>':'<th style="width:28%"></th>')
+    +'</tr></thead><tbody>'
+    +data.slice(0,40).map(d=>'<tr><td class="nm">'+d.k+'</td><td class="n">'+nf(d.n)
+      +'</td><td class="n">'+nf(d.shops)+'</td>'
+      +(showLast? '<td class="n">'+d.last+'</td>'
+                : '<td><div class="bar"><i style="width:'+(d.n/max*100).toFixed(0)+'%"></i></div></td>')
+      +'</tr>').join('')
+    +'</tbody></table>';
+}
+function downloadCsv(){
+  const rows=filtered();
+  if(!rows.length){ alert('Nothing to export with these filters.'); return; }
+  const head=['Date','MIO','Division','Zone','Region','Territory','Chemist Code','Chemist Name'];
+  const body=rows.map(r=>[r.when,r.rep,divOf(r.zone),r.zone,r.region,r.terr,r.code,r.name]
+    .map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  const blob=new Blob([head.join(',')+'\n'+body.join('\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='gavirad_field_orders.csv';
+  a.click();
+}
+load();
+</script>
